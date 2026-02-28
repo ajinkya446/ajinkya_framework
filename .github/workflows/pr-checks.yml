@@ -1,0 +1,70 @@
+name: Pull Request Checks
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  analyze:
+    name: Static Analysis & Linting
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.x'
+          cache: true
+
+      - name: Get Flutter dependencies
+        run: flutter pub get
+
+      - name: Run static analysis
+        run: bash scripts/analyze.sh
+
+  test:
+    name: Unit & Widget Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.x'
+          cache: true
+
+      - name: Get Flutter dependencies
+        run: flutter pub get
+
+      - name: Run tests
+        run: bash scripts/test.sh
+
+  quick-build:
+    name: Quick Build (Web)
+    runs-on: ubuntu-latest
+    needs: [analyze, test]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.x'
+          cache: true
+
+      - name: Get Flutter dependencies
+        run: flutter pub get
+
+      - name: Build Web (quick verification)
+        run: bash scripts/build.sh web
+
+  checks-passed:
+    name: All PR Checks Passed
+    runs-on: ubuntu-latest
+    needs: [analyze, test, quick-build]
+    if: success()
+    steps:
+      - name: Success
+        run: echo "✓ All PR checks passed!"
