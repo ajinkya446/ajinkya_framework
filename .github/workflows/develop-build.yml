@@ -1,0 +1,26 @@
+name: Develop Branch Build
+
+on:
+  push:
+    branches:
+      - develop
+
+jobs:
+  build:
+    name: Build Web (after merge)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.x'
+          cache: true
+
+      - name: Get Flutter dependencies
+        run: flutter pub get
+
+      - name: Build Web
+        run: bash scripts/build.sh web
